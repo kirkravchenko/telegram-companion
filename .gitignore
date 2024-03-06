@@ -1,1 +1,4 @@
 project.properties
+*.xml
+*.md
+*.iml
