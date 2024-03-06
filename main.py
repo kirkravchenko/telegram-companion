@@ -1,7 +1,8 @@
 from openai import OpenAI
 from jproperties import Properties
 import telebot
-import gpt
+import prompter
+from pprintpp import pprint
 
 
 def get_property(prop):
@@ -14,31 +15,33 @@ def get_property(prop):
 bot = telebot.TeleBot(get_property("BOT_TOKEN"), parse_mode='MARKDOWN')
 openai_token = get_property("openai_token")
 client = OpenAI(api_key=openai_token)
-sarcastic = gpt.Sarcastic()
 
 
-def request(companion):
+def request(messages):
     response = client.chat.completions.create(
         model=get_property("model"),
-        messages=companion.messages,
+        messages=messages,
         temperature=0.8,
         top_p=1
     )
     response = response.choices[0].message.content
-    print(f"ответ: " + response)
-    msg = gpt.create_assistant(response)
-    companion.messages.append(msg)
+    # print(f"ответ: " + response)
+    messages.append(
+        prompter.get_assistant_msg(response)
+    )
     return response
 
 
 @bot.message_handler()
 def command_help(message):
-    msg = gpt.create_user(message.text)
-    sarcastic.messages.append(msg)
-    print(f'вопрос: {message.text}')
-    response = request(sarcastic)
+    prompter.stanislav_messages.append(
+        prompter.get_user_msg(message.text)
+    )
+    # print(f'вопрос: {message.text}')
+    response = request(prompter.stanislav_messages)
     bot.reply_to(message, response)
-    gpt.print_messages(sarcastic)
+    pprint(prompter.stanislav_messages)
+    print('=========================================================================================================================================================================================================================================================================================================================================')
 
 
 print("bot is running...")
