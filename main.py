@@ -24,24 +24,27 @@ def request(messages):
         temperature=0.8,
         top_p=1
     )
-    response = response.choices[0].message.content
-    # print(f"ответ: " + response)
-    messages.append(
-        prompter.get_assistant_msg(response)
-    )
-    return response
+    return response.choices[0].message.content
 
 
 @bot.message_handler()
 def command_help(message):
-    prompter.stanislav_messages.append(
+    prompter.stanislav_user_messages.append(
         prompter.get_user_msg(message.text)
     )
-    # print(f'вопрос: {message.text}')
-    response = request(prompter.stanislav_messages)
+    if len(prompter.stanislav_user_messages) > 4:
+        prompter.stanislav_user_messages = prompter.stanislav_user_messages[-4:]
+    messages = (prompter.stanislav_system_message +
+                prompter.stanislav_user_messages)
+    response = request(messages)
+    prompter.stanislav_user_messages.append(
+        prompter.get_assistant_msg(response)
+    )
+    print("Messages after response from GPT:\n")
+    pprint(prompter.stanislav_system_message + prompter.stanislav_user_messages)
     bot.reply_to(message, response)
-    pprint(prompter.stanislav_messages)
-    print('=========================================================================================================================================================================================================================================================================================================================================')
+    print(
+        '=========================================================================================================================================================================================================================================================================================================================================')
 
 
 print("bot is running...")

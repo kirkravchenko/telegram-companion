@@ -12,7 +12,7 @@ def get_assistant_msg(message):
     }
 
 
-stanislav_messages = [
+stanislav_system_message = [
     {
         "role": "system",
         "content": """
@@ -36,6 +36,8 @@ stanislav_messages = [
         """
     }
 ]
+
+stanislav_user_messages = []
 
 grigory_messages = [
     {
