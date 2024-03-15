@@ -15,7 +15,7 @@ def get_property(prop):
 bot = telebot.TeleBot(get_property("BOT_TOKEN"), parse_mode='MARKDOWN')
 openai_token = get_property("openai_token")
 client = OpenAI(api_key=openai_token)
-
+save_dialogue = False
 
 def request(messages):
     response = client.chat.completions.create(
@@ -29,19 +29,18 @@ def request(messages):
 
 @bot.message_handler()
 def command_help(message):
-    prompter.stanislav_user_messages.append(
+    prompter.user_messages.append(
         prompter.get_user_msg(message.text)
     )
-    if len(prompter.stanislav_user_messages) > 4:
-        prompter.stanislav_user_messages = prompter.stanislav_user_messages[-4:]
-    messages = (prompter.stanislav_system_message +
-                prompter.stanislav_user_messages)
+    if len(prompter.user_messages) > 4:
+        prompter.user_messages = prompter.user_messages[-4:]
+    messages = prompter.system_message + [prompter.get_user_msg(message.text)]
+    if save_dialogue:
+        messages = prompter.system_message + prompter.user_messages
+    print('Sending the messages to GPT:\n')
+    pprint(messages)
     response = request(messages)
-    prompter.stanislav_user_messages.append(
-        prompter.get_assistant_msg(response)
-    )
-    print("Messages after response from GPT:\n")
-    pprint(prompter.stanislav_system_message + prompter.stanislav_user_messages)
+    prompter.user_messages.append(prompter.get_assistant_msg(response))
     bot.reply_to(message, response)
     print(
         '=========================================================================================================================================================================================================================================================================================================================================')
