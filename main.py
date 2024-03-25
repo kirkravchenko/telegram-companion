@@ -17,6 +17,7 @@ openai_token = get_property("openai_token")
 client = OpenAI(api_key=openai_token)
 save_dialogue = False
 
+
 def request(messages):
     response = client.chat.completions.create(
         model=get_property("model"),
@@ -29,14 +30,15 @@ def request(messages):
 
 @bot.message_handler()
 def command_help(message):
+    marker = message.text[0]
     prompter.user_messages.append(
-        prompter.get_user_msg(message.text)
+        prompter.get_user_msg(message.text[1:])
     )
     if len(prompter.user_messages) > 4:
         prompter.user_messages = prompter.user_messages[-4:]
-    messages = prompter.system_message + [prompter.get_user_msg(message.text)]
+    messages = prompter.system_message(marker) + [prompter.get_user_msg(message.text)]
     if save_dialogue:
-        messages = prompter.system_message + prompter.user_messages
+        messages = prompter.system_message(marker) + prompter.user_messages
     print('Sending the messages to GPT:\n')
     pprint(messages)
     response = request(messages)
